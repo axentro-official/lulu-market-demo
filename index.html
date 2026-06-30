@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>لولو ماركت | تجربة العميل</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="products.js"></script>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    // أيقونات SVG بسيطة
+    const Icon = ({ name, className }) => {
+      const paths = {
+        cart: <path d="M6 6h15l-1.5 9h-12L5 3H2m3 18a1 1 0 100 2 1 1 0 000-2zm13 0a1 1 0 100 2 1 1 0 000-2z" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+        search: <><circle cx="11" cy="11" r="8" strokeWidth="2" stroke="currentColor" fill="none"/><path d="M21 21l-4.35-4.35" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round"/></>,
+        plus: <path d="M12 5v14m-7-7h14" strokeWidth="2.5" stroke="currentColor" fill="none" strokeLinecap="round"/>,
+        minus: <path d="M5 12h14" strokeWidth="2.5" stroke="currentColor" fill="none" strokeLinecap="round"/>,
+        trash: <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+        star: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" strokeWidth="0" fill="currentColor"/>,
+        heart: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" strokeWidth="2" stroke="currentColor" fill="none"/>,
+        whatsapp: <path d="M17.6 6.32A7.85 7.85 0 0012.05 4a7.94 7.94 0 00-6.88 11.9L4 20l4.2-1.1a7.9 7.9 0 003.8.97h.01a7.94 7.94 0 005.6-13.55zM12.02 18.5h-.01a6.6 6.6 0 01-3.36-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.55 6.55 0 011.32-8.04 6.55 6.55 0 019.14 9.4 6.55 6.55 0 01-4.87 1.73zm3.6-4.9c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.45.1-.13.2-.51.64-.63.78-.11.13-.23.15-.43.05-.2-.1-.84-.31-1.6-.99-.6-.53-1-1.18-1.12-1.38-.11-.2-.01-.31.09-.41.09-.09.2-.23.3-.35.1-.12.13-.2.2-.33.06-.13.03-.25-.02-.35-.05-.1-.45-1.08-.62-1.48-.16-.39-.33-.34-.45-.34l-.38-.01c-.13 0-.35.05-.53.25s-.7.68-.7 1.65.72 1.92.82 2.05c.1.13 1.4 2.14 3.4 3 .47.2.84.32 1.13.41.48.15.91.13 1.25.08.38-.06 1.17-.48 1.34-.94.17-.46.17-.86.12-.94-.05-.08-.18-.13-.38-.23z" strokeWidth="0" fill="currentColor"/>,
+        check: <path d="M20 6L9 17l-5-5" strokeWidth="3" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      };
+      return <svg viewBox="0 0 24 24" className={className} style={{width: '1em', height: '1em'}}>{paths[name]}</svg>;
+    };
+
+    const formatCurrency = (amount) => `${amount.toFixed(2)} ج.م`;
+
+    // ============ الهيدر ============
+    const Header = ({ cartCount, onCartClick, searchQuery, setSearchQuery }) => (
+      <header className="sticky top-0 z-40 p-4 glass">
+        <div className="container mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg text-xl">❄️</div>
+            <div className="hidden sm:block text-right">
+              <h1 className="text-lg font-black text-slate-900 leading-none">لولو ماركت</h1>
+              <p className="text-xs text-slate-500 mt-1">التوصيل إلى: القاهرة، مدينة نصر</p>
+            </div>
+          </div>
+          <div className="flex-1 max-w-xl relative hidden md:block">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" /></span>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ابحث عن منتجاتك المفضلة..." 
+              className="w-full bg-white/80 border border-transparent focus:border-primary rounded-full py-3 pr-12 pl-4 text-sm outline-none transition-all"
+            />
+          </div>
+          <button onClick={onCartClick} className="relative p-3 bg-white rounded-2xl shadow-sm text-slate-700 hover:text-primary transition-colors">
+            <Icon name="cart" className="text-2xl" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -left-1 bg-primary text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </header>
+    );
+
+    // ============ بطاقة المنتج ============
+    const ProductCard = ({ product, onAddToCart }) => {
+      const discount = product.oldPrice ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
+      return (
+        <div className="product-card bg-white rounded-3xl p-3 shadow-sm border border-slate-100 cursor-pointer flex flex-col">
+          <div className="relative">
+            <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded-2xl" />
+            <div className="absolute top-2 right-2 flex flex-col gap-1">
+              {product.isNew && <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">جديد</span>}
+              {product.isBestSeller && <span className="bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1"><Icon name="star" className="text-[10px]"/> الأكثر مبيعاً</span>}
+            </div>
+            {discount > 0 && <span className="absolute bottom-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md">خصم {discount}%</span>}
+          </div>
+          <div className="flex flex-col mt-3 flex-1">
+            <div className="flex items-center gap-1 mb-1">
+              <Icon name="star" className="text-yellow-400 text-sm" />
+              <span className="text-xs font-bold text-slate-600">{product.rating}</span>
+            </div>
+            <h3 className="font-bold text-slate-800 text-sm leading-tight">{product.name}</h3>
+            <p className="text-slate-400 text-xs mt-1">{product.unit}</p>
+            <div className="flex items-center justify-between mt-auto pt-3">
+              <div className="flex flex-col">
+                {product.oldPrice && <span className="text-slate-400 text-xs line-through">{formatCurrency(product.oldPrice)}</span>}
+                <span className="text-primary font-black text-lg">{formatCurrency(product.price)}</span>
+              </div>
+              <button 
+                onClick={() => onAddToCart(product.id)}
+                className="bg-secondary/10 text-secondary hover:bg-secondary hover:text-white transition-colors rounded-xl p-2.5 text-xl"
+              >
+                <Icon name="plus" />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ============ سلة التسوق ============
+    const CartDrawer = ({ isOpen, onClose, items, onUpdateQty, onRemove, onCheckout }) => {
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const deliveryFee = subtotal > 0 ? 25 : 0;
+      const total = subtotal + deliveryFee;
+
+      return (
+        <>
+          {isOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" onClick={onClose}></div>}
+          <div className={`fixed top-0 left-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-black flex items-center gap-2"><Icon name="cart" className="text-primary text-2xl"/> سلة التسوق ({items.length})</h3>
+              <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-2xl">✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center text-slate-400">
+                  <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-4xl">🛒</div>
+                  <p className="font-bold text-lg text-slate-600">سلتك فارغة</p>
+                </div>
+              ) : (
+                items.map(item => (
+                  <div key={item.id} className="bg-white rounded-2xl p-3 flex gap-3 shadow-sm">
+                    <img src={item.image} className="w-20 h-20 rounded-xl object-cover" alt={item.name} />
+                    <div className="flex-1 flex flex-col">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-slate-800 text-sm">{item.name}</h4>
+                        <button onClick={() => onRemove(item.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="trash" /></button>
+                      </div>
+                      <span className="text-xs text-slate-400 mb-2">{item.unit}</span>
+                      <div className="flex justify-between items-center mt-auto">
+                        <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                          <button onClick={() => onUpdateQty(item.id, -1)} className="p-1 hover:bg-white rounded"><Icon name="minus" className="text-sm"/></button>
+                          <span className="font-bold text-sm w-4 text-center">{item.qty}</span>
+                          <button onClick={() => onUpdateQty(item.id, 1)} className="p-1 hover:bg-white rounded"><Icon name="plus" className="text-sm"/></button>
+                        </div>
+                        <span className="text-primary font-black text-sm">{formatCurrency(item.price * item.qty)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {items.length > 0 && (
+              <div className="p-4 bg-white border-t space-y-3">
+                <div className="flex justify-between text-sm text-slate-500"><span>المجموع الفرعي</span> <span>{formatCurrency(subtotal)}</span></div>
+                <div className="flex justify-between text-sm text-slate-500"><span>رسوم التوصيل</span> <span>{formatCurrency(deliveryFee)}</span></div>
+                <div className="flex justify-between pt-3 border-t border-dashed">
+                  <span className="font-bold text-slate-900">الإجمالي</span> <span className="font-black text-primary text-lg">{formatCurrency(total)}</span>
+                </div>
+                <button onClick={onCheckout} className="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-red-700 transition-colors mt-2">إتمام الطلب</button>
+              </div>
+            )}
+          </div>
+        </>
+      );
+    };
+
+    // ============ صفحة الدفع ============
+    const CheckoutPage = ({ items, onBack, onConfirm }) => {
+      const [name, setName] = useState('');
+      const [phone, setPhone] = useState('');
+      const [address, setAddress] = useState('');
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const total = subtotal + 25;
+
+      const handleSubmit = () => {
+        if(!name || !phone || !address) return alert("من فضلك أكمل البيانات");
+        onConfirm({ name, phone, address });
+      };
+
+      return (
+        <div className="container mx-auto px-4 py-6 pb-24">
+          <button onClick={onBack} className="flex items-center gap-1 text-slate-600 mb-6 hover:text-primary">→ العودة للسلة</button>
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white p-6 rounded-3xl shadow-sm">
+                <h2 className="text-xl font-bold mb-4">📍 معلومات التوصيل</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل" className="bg-slate-100 rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary text-sm" />
+                  <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="رقم الجوال" className="bg-slate-100 rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+                <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="العنوان بالتفصيل" className="w-full mt-4 bg-slate-100 rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary text-sm" />
+              </div>
+              <div className="bg-white p-6 rounded-3xl shadow-sm">
+                <h2 className="text-xl font-bold mb-4">💳 طريقة الدفع</h2>
+                <div className="border-2 border-secondary bg-secondary/5 rounded-2xl p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">🚚</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">الدفع عند الاستلام</h3>
+                    <p className="text-xs text-slate-500">ادفع نقداً للمندوب</p>
+                  </div>
+                  <span className="text-secondary text-2xl">✓</span>
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-1">
+              <div className="bg-white p-6 rounded-3xl shadow-sm sticky top-24">
+                <h2 className="text-xl font-bold mb-4">ملخص الطلب</h2>
+                <div className="space-y-3 max-h-64 overflow-y-auto mb-4">
+                  {items.map(item => (
+                    <div key={item.id} className="flex gap-3 items-center text-sm">
+                      <div className="relative">
+                        <img src={item.image} className="w-14 h-14 rounded-xl object-cover" alt={item.name} />
+                        <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">{item.qty}</span>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium line-clamp-1">{item.name}</h4>
+                        <p className="text-slate-400 text-xs">{formatCurrency(item.price)}</p>
+                      </div>
+                      <span className="font-bold">{formatCurrency(item.price * item.qty)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between text-sm text-slate-500"><span>المجموع</span><span>{formatCurrency(subtotal)}</span></div>
+                  <div className="flex justify-between text-sm text-slate-500"><span>التوصيل</span><span>25.00 ج.م</span></div>
+                  <div className="flex justify-between pt-2 mt-2 border-t border-dashed">
+                    <span className="font-bold">الإجمالي</span> <span className="font-black text-primary text-lg">{formatCurrency(total)}</span>
+                  </div>
+                </div>
+                <button onClick={handleSubmit} className="w-full mt-6 bg-primary text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-red-700 transition-colors">
+                  تأكيد الطلب
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ============ الصفحة الرئيسية ============
+    const App = () => {
+      const [cart, setCart] = useState({});
+      const [isCartOpen, setIsCartOpen] = useState(false);
+      const [view, setView] = useState('home');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [activeCategory, setActiveCategory] = useState('all');
+
+      const handleAddToCart = (id) => {
+        setCart(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+      };
+
+      const handleUpdateQty = (id, delta) => {
+        setCart(prev => {
+          const newQty = (prev[id] || 0) + delta;
+          if (newQty <= 0) { const { [id]: _, ...rest } = prev; return rest; }
+          return { ...prev, [id]: newQty };
+        });
+      };
+
+      const handleConfirmOrder = (data) => {
+        const storePhone = "201000000000";
+        let msg = `🛒 *طلب جديد من لولو ماركت*\n\n👤 *الاسم:* ${data.name}\n📱 *الجوال:* ${data.phone}\n📍 *العنوان:* ${data.address}\n\n*تفاصيل الطلب:*\n`;
+        cartItems.forEach((item, i) => {
+          msg += `${i + 1}. ${item.name} (${item.unit})\n   الكمية: ${item.qty} × ${formatCurrency(item.price)} = *${formatCurrency(item.price * item.qty)}*\n`;
+        });
+        msg += `\n*---------------------*\n💵 المجموع: ${formatCurrency(subtotal)}\n🚚 التوصيل: 25.00 ج.م\n💰 *الإجمالي: ${formatCurrency(subtotal + 25)}*`;
+        window.open(`https://wa.me/${storePhone}?text=${encodeURIComponent(msg)}`, '_blank');
+        setCart({});
+        setView('success');
+      };
+
+      const cartItems = Object.entries(cart).map(([id, qty]) => {
+        const product = productsData.find(p => p.id === id);
+        return { ...product, qty };
+      });
+
+      const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
+      const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+      const filteredProducts = useMemo(() => {
+        return productsData.filter(p => 
+          (activeCategory === 'all' || p.category === activeCategory) &&
+          (searchQuery === '' || p.name.includes(searchQuery))
+        );
+      }, [activeCategory, searchQuery]);
+
+      return (
+        <div className="min-h-screen pb-20">
+          <Header cartCount={cartCount} onCartClick={() => setIsCartOpen(true)} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+          {view === 'home' && (
+            <>
+              <div className="container mx-auto px-4 mt-6">
+                <div className="relative h-56 md:h-72 rounded-3xl overflow-hidden shadow-lg bg-gradient-to-l from-primary to-red-800 flex items-center p-8">
+                  <div className="relative z-10 text-white">
+                    <h2 className="text-3xl md:text-4xl font-black mb-2">أطعمة مجمدة فاخرة</h2>
+                    <p className="text-white/90 mb-6 text-sm">جودة عالية تصلك حتى باب منزلك</p>
+                    <button className="bg-white text-primary font-bold py-2 px-6 rounded-full text-sm">تسوق الآن</button>
+                  </div>
+                  <div className="absolute top-4 left-4 text-white/10 text-9xl">❄️</div>
+                </div>
+              </div>
+
+              <div className="container mx-auto px-4 mt-8">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeCategory === cat.id ? 'bg-primary text-white' : 'bg-white text-slate-600 border'}`}
+                    >
+                      <span>{cat.icon}</span> {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <section className="container mx-auto px-4 mt-8">
+                <h3 className="text-xl font-bold mb-4">كل المنتجات ({filteredProducts.length})</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {filteredProducts.map(p => <ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} />)}
+                </div>
+              </section>
+            </>
+          )}
+
+          {view === 'checkout' && <CheckoutPage items={cartItems} onBack={() => setView('home')} onConfirm={handleConfirmOrder} />}
+
+          {view === 'success' && (
+            <div className="container mx-auto px-4 py-20 text-center flex flex-col items-center min-h-[70vh] justify-center">
+              <div className="w-24 h-24 bg-secondary/20 rounded-full flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center text-white text-4xl">✓</div>
+              </div>
+              <h2 className="text-3xl font-black mb-2">تم استلام طلبك بنجاح!</h2>
+              <p className="text-slate-500 mb-8">سيتم التواصل معك عبر واتساب لتأكيد الطلب</p>
+              <button onClick={() => setView('home')} className="bg-primary text-white font-bold py-3 px-8 rounded-full">العودة للرئيسية</button>
+            </div>
+          )}
+
+          <CartDrawer 
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            items={cartItems}
+            onUpdateQty={handleUpdateQty}
+            onRemove={(id) => setCart(prev => { const { [id]: _, ...rest } = prev; return rest; })}
+            onCheckout={() => { setIsCartOpen(false); setView('checkout'); }}
+          />
+
+          <a href="#" className="fixed bottom-6 left-4 z-30 w-14 h-14 bg-green-500 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-green-600">
+            <Icon name="whatsapp" className="text-3xl" />
+          </a>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
