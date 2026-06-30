@@ -6,19 +6,12 @@
   transition: all 0.3s ease;
 }
 
-body {
-  background-color: #F7F8FA;
-  margin: 0;
-  padding: 0;
-}
-
+body { background-color: #F7F8FA; margin: 0; padding: 0; }
 .dark body { background-color: #020617; color: white; }
 
-/* Scrollbar */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Glassmorphism */
 .glass {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);
@@ -30,39 +23,19 @@ body {
   border-bottom: 1px solid rgba(51, 65, 85, 0.5);
 }
 
-/* Premium Product Card */
-.product-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15);
-}
+.product-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15); }
 
-/* Animations */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-@keyframes slideInLeft {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-@keyframes pulseRing {
-  0% { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes pulseRing { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
 
 .anim-slide-up { animation: slideUp 0.5s ease forwards; }
 .anim-scale-in { animation: scaleIn 0.3s ease forwards; }
 .anim-cart { animation: slideInLeft 0.3s ease forwards; }
 .anim-pulse-ring { animation: pulseRing 1.5s infinite; }
 
-/* Dark Mode Colors Support */
 .dark .bg-white { background-color: #1e293b !important; }
 .dark .text-slate-800 { color: white !important; }
 .dark .text-slate-900 { color: white !important; }
