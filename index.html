@@ -28,7 +28,6 @@
   <script type="text/babel">
     const { useState, useMemo, useEffect } = React;
 
-    // أيقونات SVG مدمجة
     const Icon = ({ name, className = "w-5 h-5" }) => {
       const icons = {
         cart: <path d="M6 6h15l-1.5 9h-12L5 3H2m3 18a1 1 0 100 2 1 1 0 000-2zm13 0a1 1 0 100 2 1 1 0 000-2z" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
@@ -55,20 +54,20 @@
 
     const formatCurrency = (amount) => `${amount.toFixed(2)} ج.م`;
 
-    // ============ الهيدر ============
-    const Header = ({ cartCount, darkMode, setDarkMode, onCartClick, searchQuery, setSearchQuery }) => (
-      <header className="sticky top-0 z-40 p-4 glass">
-        <div className="container mx-auto flex items-center justify-between gap-4">
+    const Header = ({ cartCount, darkMode, setDarkMode, onCartClick, showMobileSearch, setShowMobileSearch, searchQuery, setSearchQuery }) => (
+      <header className="sticky top-0 z-40 glass">
+        <div className="container mx-auto p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-red-700 flex items-center justify-center text-white shadow-btn text-xl">❄️</div>
-            <div className="hidden sm:block text-right">
+            <div className="text-right">
               <h1 className="text-lg font-black text-slate-900 dark:text-white leading-none">لولو ماركت</h1>
-              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <div className="hidden sm:flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
                 <Icon name="mapPin" className="w-3 h-3 text-secondary" />
                 <span>التوصيل إلى: القاهرة، مدينة نصر</span>
               </div>
             </div>
           </div>
+          
           <div className="flex-1 max-w-xl relative hidden md:block">
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" /></span>
             <input 
@@ -77,7 +76,11 @@
               className="w-full bg-slate-100/80 dark:bg-slate-800 border border-transparent focus:border-primary rounded-full py-3 pr-12 pl-4 text-sm outline-none transition-all dark:text-white"
             />
           </div>
+
           <div className="flex items-center gap-2">
+            <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="md:hidden p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-700 dark:text-white">
+              <Icon name="search" />
+            </button>
             <button onClick={() => setDarkMode(!darkMode)} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-700 dark:text-yellow-400">
               <Icon name={darkMode ? 'sun' : 'moon'} />
             </button>
@@ -91,15 +94,32 @@
             </button>
           </div>
         </div>
+        
+        {/* Mobile Search Bar */}
+        {showMobileSearch && (
+          <div className="md:hidden container mx-auto px-4 pb-4 anim-slide-up">
+            <div className="relative">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"><Icon name="search" /></span>
+              <input 
+                type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="ابحث هنا..." autoFocus
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-primary rounded-full py-3 pr-12 pl-4 text-sm outline-none dark:text-white"
+              />
+            </div>
+          </div>
+        )}
       </header>
     );
 
-    // ============ شريط التنقل السفلي ============
-    const BottomNav = ({ onHome, onCart, cartCount, favCount }) => (
+    const BottomNav = ({ active, onHome, onSearch, onFav, onCart, cartCount, favCount }) => (
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass flex justify-around p-2 pb-3 shadow-premium">
-        <button onClick={onHome} className="flex flex-col items-center text-primary"><Icon name="home" /><span className="text-[10px] mt-1">الرئيسية</span></button>
-        <button className="flex flex-col items-center text-slate-400"><Icon name="search" /><span className="text-[10px] mt-1">بحث</span></button>
-        <button className="flex flex-col items-center text-slate-400 relative">
+        <button onClick={onHome} className={`flex flex-col items-center ${active === 'home' ? 'text-primary' : 'text-slate-400'}`}>
+          <Icon name="home" /><span className="text-[10px] mt-1">الرئيسية</span>
+        </button>
+        <button onClick={onSearch} className={`flex flex-col items-center ${active === 'search' ? 'text-primary' : 'text-slate-400'}`}>
+          <Icon name="search" /><span className="text-[10px] mt-1">بحث</span>
+        </button>
+        <button onClick={onFav} className={`flex flex-col items-center relative ${active === 'fav' ? 'text-primary' : 'text-slate-400'}`}>
           <Icon name="heart" />
           {favCount > 0 && <span className="absolute -top-1 -right-2 bg-primary text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">{favCount}</span>}
           <span className="text-[10px] mt-1">المفضلة</span>
@@ -112,7 +132,6 @@
       </div>
     );
 
-    // ============ عروض الفلاش ============
     const FlashSale = ({ onAddToCart }) => {
       const [time, setTime] = useState({ h: 5, m: 42, s: 18 });
       useEffect(() => {
@@ -170,7 +189,6 @@
       );
     };
 
-    // ============ بطاقة المنتج ============
     const ProductCard = ({ product, onAddToCart, onCardClick, isFav, onFav }) => {
       const discount = product.oldPrice ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
       return (
@@ -207,7 +225,6 @@
       );
     };
 
-    // ============ تفاصيل المنتج ============
     const ProductDetails = ({ product, onAddToCart, onBack, isFav, onFav }) => {
       const [qty, setQty] = useState(1);
       const discount = product.oldPrice ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
@@ -266,7 +283,6 @@
       );
     };
 
-    // ============ سلة التسوق ============
     const CartDrawer = ({ isOpen, onClose, items, onUpdateQty, onRemove, onCheckout }) => {
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
       const delivery = subtotal > 0 ? 25 : 0;
@@ -322,7 +338,6 @@
       );
     };
 
-    // ============ صفحة الدفع ============
     const CheckoutPage = ({ items, onBack, onConfirm }) => {
       const [name, setName] = useState('');
       const [phone, setPhone] = useState('');
@@ -384,23 +399,23 @@
       );
     };
 
-    // ============ التطبيق الرئيسي ============
     const App = () => {
       const [darkMode, setDarkMode] = useState(false);
       const [cart, setCart] = useState({});
       const [favs, setFavs] = useState([]);
       const [isCartOpen, setIsCartOpen] = useState(false);
-      const [view, setView] = useState('home');
+      const [view, setView] = useState('home'); // home, product, checkout, success
       const [selectedProduct, setSelectedProduct] = useState(null);
       const [searchQuery, setSearchQuery] = useState('');
       const [activeCategory, setActiveCategory] = useState('all');
       const [maxPrice, setMaxPrice] = useState(350);
       const [bestOnly, setBestOnly] = useState(false);
       const [toasts, setToasts] = useState([]);
+      const [showMobileSearch, setShowMobileSearch] = useState(false);
+      const [showFavsOnly, setShowFavsOnly] = useState(false);
+      const [activeNav, setActiveNav] = useState('home');
 
-      useEffect(() => {
-        document.documentElement.classList.toggle('dark', darkMode);
-      }, [darkMode]);
+      useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); }, [darkMode]);
 
       const addToast = (msg) => {
         const id = Date.now();
@@ -413,6 +428,10 @@
         addToast('تمت الإضافة للسلة بنجاح');
       };
 
+      const handleFav = (id) => {
+        setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
+      };
+
       const cartItems = Object.entries(cart).map(([id, qty]) => ({ ...productsData.find(p => p.id === id), qty }));
       const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
 
@@ -421,12 +440,13 @@
           (activeCategory === 'all' || p.category === activeCategory) &&
           p.price <= maxPrice &&
           (!bestOnly || p.isBestSeller) &&
-          (searchQuery === '' || p.name.includes(searchQuery))
+          (searchQuery === '' || p.name.includes(searchQuery)) &&
+          (!showFavsOnly || favs.includes(p.id))
         );
-      }, [activeCategory, maxPrice, bestOnly, searchQuery]);
+      }, [activeCategory, maxPrice, bestOnly, searchQuery, showFavsOnly, favs]);
 
       const handleConfirmOrder = (data) => {
-        const phone = "201000000000";
+        const phone = "201146476993"; // رقم الواتساب المطلوب
         let msg = `🛒 *طلب جديد من لولو ماركت*\n\n👤 *الاسم:* ${data.name}\n📱 *الجوال:* ${data.phone}\n📍 *العنوان:* ${data.address}\n\n*تفاصيل الطلب:*\n`;
         cartItems.forEach((i, idx) => { msg += `${idx+1}. ${i.name} (${i.weight})\n   الكمية: ${i.qty} × ${formatCurrency(i.price)} = *${formatCurrency(i.price * i.qty)}*\n`; });
         msg += `\n*---------------------*\n💵 المجموع: ${formatCurrency(cartItems.reduce((s,i)=>s+i.price*i.qty,0))}\n🚚 التوصيل: 25.00 ج.م\n💰 *الإجمالي: ${formatCurrency(cartItems.reduce((s,i)=>s+i.price*i.qty,0) + 25)}*`;
@@ -448,7 +468,9 @@
 
           <Header 
             cartCount={cartCount} darkMode={darkMode} setDarkMode={setDarkMode}
-            onCartClick={() => setIsCartOpen(true)} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+            onCartClick={() => setIsCartOpen(true)} 
+            showMobileSearch={showMobileSearch} setShowMobileSearch={setShowMobileSearch}
+            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
           />
 
           {view === 'home' && (
@@ -466,9 +488,13 @@
 
               <FlashSale onAddToCart={handleAddToCart} />
 
-              {/* Filters */}
+              {/* Filters Section - Fixed Layout */}
               <div className="container mx-auto px-4 mt-8">
-                <div className="flex items-center gap-2 mb-4"><Icon name="sliders" className="text-slate-700 dark:text-white" /><h3 className="text-xl font-bold dark:text-white">تصفية المنتجات</h3></div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Icon name="sliders" className="w-5 h-5 text-slate-700 dark:text-white" />
+                  <h3 className="text-xl font-bold dark:text-white">تصفية المنتجات</h3>
+                </div>
+                
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
                   {categories.map(c => (
                     <button key={c.id} onClick={() => setActiveCategory(c.id)} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${activeCategory === c.id ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border'}`}>
@@ -476,27 +502,44 @@
                     </button>
                   ))}
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4 mb-4">
-                  <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm flex flex-col gap-4 mb-4">
+                  <div className="flex items-center gap-3 w-full">
                     <span className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">السعر الأقصى:</span>
                     <input type="range" min="10" max="350" value={maxPrice} onChange={e => setMaxPrice(+e.target.value)} className="flex-1 accent-primary" />
                     <span className="text-sm font-bold text-primary w-20 text-left">{formatCurrency(maxPrice)}</span>
                   </div>
-                  <button onClick={() => setBestOnly(!bestOnly)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${bestOnly ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
-                    <Icon name="star" className={`w-4 h-4 ${bestOnly ? 'fill-current' : ''}`} /> الأكثر مبيعاً
-                  </button>
+                  <div className="flex items-center justify-between w-full">
+                    <button onClick={() => setBestOnly(!bestOnly)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${bestOnly ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
+                      <Icon name="star" className={`w-4 h-4 ${bestOnly ? 'fill-current' : ''}`} /> الأكثر مبيعاً
+                    </button>
+                    {showFavsOnly && (
+                      <button onClick={() => setShowFavsOnly(false)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary/10 text-primary">
+                        <Icon name="heart" className="w-4 h-4 fill-primary" /> إخفاء المفضلة
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
               <section className="container mx-auto px-4 mt-8">
-                <h3 className="text-xl font-bold dark:text-white mb-4">كل المنتجات ({filteredProducts.length})</h3>
+                <h3 className="text-xl font-bold dark:text-white mb-4">
+                  {showFavsOnly ? 'المفضلة' : 'كل المنتجات'} ({filteredProducts.length})
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {filteredProducts.map(p => (
-                    <ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} 
-                      onCardClick={(id) => { setSelectedProduct(productsData.find(x => x.id === id)); setView('product'); window.scrollTo(0, 0); }}
-                      isFav={favs.includes(p.id)} onFav={(id) => setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])}
-                    />
-                  ))}
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map(p => (
+                      <ProductCard key={p.id} product={p} onAddToCart={handleAddToCart} 
+                        onCardClick={(id) => { setSelectedProduct(productsData.find(x => x.id === id)); setView('product'); window.scrollTo(0, 0); }}
+                        isFav={favs.includes(p.id)} onFav={handleFav}
+                      />
+                    ))
+                  ) : (
+                    <div className="col-span-2 md:col-span-4 text-center py-12 text-slate-400">
+                      <div className="text-5xl mb-4">{showFavsOnly ? '💔' : '🔍'}</div>
+                      <p className="font-bold text-lg">{showFavsOnly ? 'لا توجد منتجات في المفضلة' : 'لا توجد منتجات مطابقة'}</p>
+                    </div>
+                  )}
                 </div>
               </section>
             </>
@@ -504,7 +547,7 @@
 
           {view === 'product' && selectedProduct && (
             <ProductDetails product={selectedProduct} onAddToCart={handleAddToCart} onBack={() => setView('home')}
-              isFav={favs.includes(selectedProduct.id)} onFav={(id) => setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])}
+              isFav={favs.includes(selectedProduct.id)} onFav={handleFav}
             />
           )}
 
@@ -534,11 +577,19 @@
             </button>
           )}
 
-          <a href="#" className="fixed bottom-20 md:bottom-6 left-4 z-30 w-14 h-14 bg-green-500 rounded-full shadow-premium flex items-center justify-center text-white hover:bg-green-600">
+          <a href="https://wa.me/201146476993" target="_blank" className="fixed bottom-20 md:bottom-6 left-4 z-30 w-14 h-14 bg-green-500 rounded-full shadow-premium flex items-center justify-center text-white hover:bg-green-600">
             <Icon name="whatsapp" className="w-7 h-7" />
           </a>
 
-          <BottomNav onHome={() => setView('home')} onCart={() => setIsCartOpen(true)} cartCount={cartCount} favCount={favs.length} />
+          <BottomNav 
+            active={activeNav}
+            onHome={() => { setView('home'); setShowMobileSearch(false); setShowFavsOnly(false); setActiveNav('home'); }}
+            onSearch={() => { setShowMobileSearch(!showMobileSearch); setActiveNav('search'); }}
+            onFav={() => { setShowFavsOnly(!showFavsOnly); setView('home'); setActiveNav('fav'); }}
+            onCart={() => setIsCartOpen(true)}
+            cartCount={cartCount} 
+            favCount={favs.length} 
+          />
         </div>
       );
     };
