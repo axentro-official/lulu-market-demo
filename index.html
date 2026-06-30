@@ -39,6 +39,7 @@
         heart: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" strokeWidth="2" stroke="currentColor" fill="none"/>,
         whatsapp: <path d="M17.6 6.32A7.85 7.85 0 0012.05 4a7.94 7.94 0 00-6.88 11.9L4 20l4.2-1.1a7.9 7.9 0 003.8.97h.01a7.94 7.94 0 005.6-13.55zM12.02 18.5h-.01a6.6 6.6 0 01-3.36-.92l-.24-.14-2.49.65.67-2.43-.16-.25a6.55 6.55 0 011.32-8.04 6.55 6.55 0 019.14 9.4 6.55 6.55 0 01-4.87 1.73zm3.6-4.9c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.45.1-.13.2-.51.64-.63.78-.11.13-.23.15-.43.05-.2-.1-.84-.31-1.6-.99-.6-.53-1-1.18-1.12-1.38-.11-.2-.01-.31.09-.41.09-.09.2-.23.3-.35.1-.12.13-.2.2-.33.06-.13.03-.25-.02-.35-.05-.1-.45-1.08-.62-1.48-.16-.39-.33-.34-.45-.34l-.38-.01c-.13 0-.35.05-.53.25s-.7.68-.7 1.65.72 1.92.82 2.05c.1.13 1.4 2.14 3.4 3 .47.2.84.32 1.13.41.48.15.91.13 1.25.08.38-.06 1.17-.48 1.34-.94.17-.46.17-.86.12-.94-.05-.08-.18-.13-.38-.23z" strokeWidth="0" fill="currentColor"/>,
         check: <path d="M20 6L9 17l-5-5" strokeWidth="3" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+        alert: <><circle cx="12" cy="12" r="10" strokeWidth="2" stroke="currentColor" fill="none"/><path d="M12 8v4M12 16h.01" strokeWidth="2.5" stroke="currentColor" fill="none" strokeLinecap="round"/></>,
         moon: <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
         sun: <><circle cx="12" cy="12" r="5" strokeWidth="2" stroke="currentColor" fill="none"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round"/></>,
         home: <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
@@ -95,7 +96,6 @@
           </div>
         </div>
         
-        {/* Mobile Search Bar */}
         {showMobileSearch && (
           <div className="md:hidden container mx-auto px-4 pb-4 anim-slide-up">
             <div className="relative">
@@ -338,12 +338,20 @@
       );
     };
 
-    const CheckoutPage = ({ items, onBack, onConfirm }) => {
+    const CheckoutPage = ({ items, onBack, onConfirm, addToast }) => {
       const [name, setName] = useState('');
       const [phone, setPhone] = useState('');
       const [address, setAddress] = useState('');
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
       const total = subtotal + 25;
+
+      const handleConfirm = () => {
+        if(!name || !phone || !address) {
+          addToast('من فضلك أكمل جميع بيانات التوصيل لإتمام الطلب', 'error');
+          return;
+        }
+        onConfirm({name, phone, address});
+      };
 
       return (
         <div className="container mx-auto px-4 py-6 pb-24 md:pb-6">
@@ -389,7 +397,7 @@
                   <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400"><span>التوصيل</span><span>25.00 ج.م</span></div>
                   <div className="flex justify-between pt-2 mt-2 border-t border-dashed dark:border-slate-700"><span className="font-bold dark:text-white">الإجمالي</span> <span className="font-black text-primary text-lg">{formatCurrency(total)}</span></div>
                 </div>
-                <button onClick={() => { if(!name || !phone || !address) return alert("أكمل البيانات"); onConfirm({name, phone, address}); }} className="w-full mt-6 bg-primary text-white font-bold py-4 rounded-2xl shadow-btn hover:bg-red-700 flex items-center justify-center gap-2">
+                <button onClick={handleConfirm} className="w-full mt-6 bg-primary text-white font-bold py-4 rounded-2xl shadow-btn hover:bg-red-700 flex items-center justify-center gap-2">
                   <Icon name="whatsapp" className="w-5 h-5" /> تأكيد الطلب
                 </button>
               </div>
@@ -417,9 +425,9 @@
 
       useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); }, [darkMode]);
 
-      const addToast = (msg) => {
+      const addToast = (msg, type = 'success') => {
         const id = Date.now();
-        setToasts(t => [...t, { id, msg }]);
+        setToasts(t => [...t, { id, msg, type }]);
         setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
       };
 
@@ -446,7 +454,7 @@
       }, [activeCategory, maxPrice, bestOnly, searchQuery, showFavsOnly, favs]);
 
       const handleConfirmOrder = (data) => {
-        const phone = "201146476993"; // رقم الواتساب المطلوب
+        const phone = "201146476993"; 
         let msg = `🛒 *طلب جديد من لولو ماركت*\n\n👤 *الاسم:* ${data.name}\n📱 *الجوال:* ${data.phone}\n📍 *العنوان:* ${data.address}\n\n*تفاصيل الطلب:*\n`;
         cartItems.forEach((i, idx) => { msg += `${idx+1}. ${i.name} (${i.weight})\n   الكمية: ${i.qty} × ${formatCurrency(i.price)} = *${formatCurrency(i.price * i.qty)}*\n`; });
         msg += `\n*---------------------*\n💵 المجموع: ${formatCurrency(cartItems.reduce((s,i)=>s+i.price*i.qty,0))}\n🚚 التوصيل: 25.00 ج.م\n💰 *الإجمالي: ${formatCurrency(cartItems.reduce((s,i)=>s+i.price*i.qty,0) + 25)}*`;
@@ -457,11 +465,14 @@
 
       return (
         <div className="min-h-screen pb-20 md:pb-0">
-          {/* Toasts */}
+          {/* Premium Toasts */}
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-sm px-4 pointer-events-none">
             {toasts.map(t => (
-              <div key={t.id} className="anim-slide-up bg-secondary text-white p-4 rounded-2xl shadow-premium flex items-center gap-3 pointer-events-auto">
-                <Icon name="check" className="w-5 h-5" /> <span className="text-sm font-medium">{t.msg}</span>
+              <div key={t.id} className={`anim-slide-up text-white p-4 rounded-2xl shadow-premium flex items-center gap-3 pointer-events-auto ${t.type === 'error' ? 'bg-primary' : 'bg-secondary'}`}>
+                <div className={`p-1 rounded-full ${t.type === 'error' ? 'bg-white/20' : 'bg-white/20'}`}>
+                  <Icon name={t.type === 'error' ? 'alert' : 'check'} className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium flex-1">{t.msg}</span>
               </div>
             ))}
           </div>
@@ -488,7 +499,6 @@
 
               <FlashSale onAddToCart={handleAddToCart} />
 
-              {/* Filters Section - Fixed Layout */}
               <div className="container mx-auto px-4 mt-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Icon name="sliders" className="w-5 h-5 text-slate-700 dark:text-white" />
@@ -551,7 +561,7 @@
             />
           )}
 
-          {view === 'checkout' && <CheckoutPage items={cartItems} onBack={() => setView('home')} onConfirm={handleConfirmOrder} />}
+          {view === 'checkout' && <CheckoutPage items={cartItems} onBack={() => setView('home')} onConfirm={handleConfirmOrder} addToast={addToast} />}
 
           {view === 'success' && (
             <div className="container mx-auto px-4 py-20 text-center flex flex-col items-center min-h-[70vh] justify-center">
