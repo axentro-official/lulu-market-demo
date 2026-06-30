@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+
+* {
+  font-family: 'Tajawal', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: #F7F8FA;
+  margin: 0;
+  padding: 0;
+}
+
+/* إخفاء شريط التمرير لجعله يبدو كتطبيق */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* تأثيرات Hover الاحترافية */
+.product-card {
+  transition: all 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px -8px rgba(0,0,0,0.1);
+}
+
+/* تأثير الزجاج (Glassmorphism) */
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(209, 213, 219, 0.3);
+}
+
+/* ألوان مخصصة */
+.text-primary { color: #D62828; }
+.bg-primary { background-color: #D62828; }
+.text-secondary { color: #2E7D32; }
+.bg-secondary { background-color: #2E7D32; }
+.text-background { color: #F7F8FA; }
+.bg-background { background-color: #F7F8FA; }
